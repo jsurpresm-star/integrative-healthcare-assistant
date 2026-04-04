@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Integrative Healthcare | Book an Appointment</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600&family=Inter:wght@300;400;500&display=swap" rel="stylesheet"/>
+</head>
+<body>
+
+  <!-- Hero Section -->
+  <header class="hero">
+    <nav class="nav">
+      <div class="logo">🌿 Integrative Health</div>
+      <ul class="nav-links">
+        <li><a href="#services">Services</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#contact">Contact</a></li>
+      </ul>
+    </nav>
+    <div class="hero-content">
+      <h1>Heal from the Inside Out</h1>
+      <p>Personalized, whole-body care rooted in integrative medicine. Book your appointment with our AI assistant below.</p>
+      <a href="#chat" class="btn-primary">Book a Consultation</a>
+    </div>
+  </header>
+
+  <!-- Services Section -->
+  <section id="services" class="services">
+    <h2>Our Services</h2>
+    <div class="service-cards">
+      <div class="card">
+        <span class="icon">🌿</span>
+        <h3>Functional Medicine</h3>
+        <p>Root-cause diagnostics and personalized treatment plans.</p>
+      </div>
+      <div class="card">
+        <span class="icon">🧘</span>
+        <h3>Mind-Body Therapy</h3>
+        <p>Meditation, breathwork, and somatic healing sessions.</p>
+      </div>
+      <div class="card">
+        <span class="icon">🌸</span>
+        <h3>Nutritional Counseling</h3>
+        <p>Evidence-based dietary guidance tailored to your biology.</p>
+      </div>
+      <div class="card">
+        <span class="icon">💆</span>
+        <h3>Acupuncture</h3>
+        <p>Traditional and modern acupuncture for pain and stress.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Section -->
+  <section id="about" class="about">
+    <div class="about-inner">
+      <h2>A Different Kind of Care</h2>
+      <p>We believe health is more than the absence of disease. Our clinic blends conventional medicine with evidence-based holistic therapies to treat the whole person — mind, body, and spirit.</p>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer id="contact">
+    <p>📍 123 Wellness Way, Suite 200 &nbsp;|&nbsp; 📞 (555) 123-4567 &nbsp;|&nbsp; ✉️ hello@integrativehealth.com</p>
+    <p class="fine-print">© 2026 Integrative Health Clinic. All rights reserved.</p>
+  </footer>
+
+  <!-- ===== CHAT WIDGET ===== -->
+  <div id="chat-bubble" onclick="toggleChat()">💬</div>
+
+  <div id="chat-window" class="chat-hidden">
+    <div class="chat-header">
+      <span>🌿 Schedule an Appointment</span>
+      <button onclick="toggleChat()">✕</button>
+    </div>
+    <div id="chat-messages">
+      <div class="msg bot">Hi! I'm your scheduling assistant. How can I help you book an appointment today?</div>
+    </div>
+    <div class="chat-input-area">
+      <input id="chat-input" type="text" placeholder="Type your message..." onkeydown="if(event.key==='Enter') sendMessage()" />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <script>
+    function toggleChat() {
+      const win = document.getElementById('chat-window');
+      win.classList.toggle('chat-hidden');
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('chat-input');
+      const messages = document.getElementById('chat-messages');
+      const text = input.value.trim();
+      if (!text) return;
+
+      // Append user message
+      messages.innerHTML += `<div class="msg user">${text}</div>`;
+      input.value = '';
+      messages.scrollTop = messages.scrollHeight;
+
+      // Typing indicator
+      const typing = document.createElement('div');
+      typing.className = 'msg bot typing';
+      typing.textContent = '...';
+      messages.appendChild(typing);
+      messages.scrollTop = messages.scrollHeight;
+
+      try {
+        const res = await fetch('http://localhost:3001/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text }),
+        });
+        const data = await res.json();
+        typing.remove();
+        messages.innerHTML += `<div class="msg bot">${data.reply || data.error}</div>`;
+      } catch (err) {
+        typing.remove();
+        messages.innerHTML += `<div class="msg bot">Sorry, I'm having trouble connecting. Please try again.</div>`;
+      }
+
+      messages.scrollTop = messages.scrollHeight;
+    }
+  </script>
+</body>
+</html>
