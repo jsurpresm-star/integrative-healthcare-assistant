@@ -30,22 +30,22 @@
   <section id="services" class="services">
     <h2>Our Services</h2>
     <div class="service-cards">
-      <div class="card">
+      <div class="card" onclick="startBooking('Functional Medicine')">
         <span class="icon">🌿</span>
         <h3>Functional Medicine</h3>
         <p>Root-cause diagnostics and personalized treatment plans.</p>
       </div>
-      <div class="card">
+      <div class="card" onclick="startBooking('Mind-Body Therapy')">
         <span class="icon">🧘</span>
         <h3>Mind-Body Therapy</h3>
         <p>Meditation, breathwork, and somatic healing sessions.</p>
       </div>
-      <div class="card">
+      <div class="card" onclick="startBooking('Nutritional Counseling')">
         <span class="icon">🌸</span>
         <h3>Nutritional Counseling</h3>
         <p>Evidence-based dietary guidance tailored to your biology.</p>
       </div>
-      <div class="card">
+      <div class="card" onclick="startBooking('Acupuncture')">
         <span class="icon">💆</span>
         <h3>Acupuncture</h3>
         <p>Traditional and modern acupuncture for pain and stress.</p>
@@ -85,6 +85,17 @@
   </div>
 
   <script>
+    const conversationHistory = [];
+
+    function startBooking(service) {
+      // Open chat and pre-send the service selection
+      const win = document.getElementById('chat-window');
+      win.classList.remove('chat-hidden');
+      document.getElementById('chat-input').value = `I'd like to book a ${service} appointment`;
+      sendMessage();
+      window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+
     function toggleChat() {
       const win = document.getElementById('chat-window');
       win.classList.toggle('chat-hidden');
@@ -92,37 +103,40 @@
 
     async function sendMessage() {
       const input = document.getElementById('chat-input');
-      const messages = document.getElementById('chat-messages');
+      const messagesEl = document.getElementById('chat-messages');
       const text = input.value.trim();
       if (!text) return;
 
-      // Append user message
-      messages.innerHTML += `<div class="msg user">${text}</div>`;
+      // Add to history and display
+      conversationHistory.push({ role: 'user', content: text });
+      messagesEl.innerHTML += `<div class="msg user">${text}</div>`;
       input.value = '';
-      messages.scrollTop = messages.scrollHeight;
+      messagesEl.scrollTop = messagesEl.scrollHeight;
 
       // Typing indicator
       const typing = document.createElement('div');
       typing.className = 'msg bot typing';
       typing.textContent = '...';
-      messages.appendChild(typing);
-      messages.scrollTop = messages.scrollHeight;
+      messagesEl.appendChild(typing);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
 
       try {
         const res = await fetch('http://localhost:3001/api/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text }),
+          body: JSON.stringify({ messages: conversationHistory }),
         });
         const data = await res.json();
         typing.remove();
-        messages.innerHTML += `<div class="msg bot">${data.reply || data.error}</div>`;
+        const reply = data.reply || data.error;
+        conversationHistory.push({ role: 'assistant', content: reply });
+        messagesEl.innerHTML += `<div class="msg bot">${reply}</div>`;
       } catch (err) {
         typing.remove();
-        messages.innerHTML += `<div class="msg bot">Sorry, I'm having trouble connecting. Please try again.</div>`;
+        messagesEl.innerHTML += `<div class="msg bot">Sorry, I'm having trouble connecting. Please try again.</div>`;
       }
 
-      messages.scrollTop = messages.scrollHeight;
+      messagesEl.scrollTop = messagesEl.scrollHeight;
     }
   </script>
 </body>
